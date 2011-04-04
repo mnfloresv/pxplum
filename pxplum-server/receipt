@@ -1,0 +1,5 @@
+FLAVOR="pxplum-server"
+SHORT_DESC="SliTaz Pxplum Server"
+ROOTFS_SIZE="13.1M"
+INITRAMFS_SIZE="4.1M"
+ISO_SIZE="6.9M"
