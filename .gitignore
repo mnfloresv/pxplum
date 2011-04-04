@@ -3,3 +3,6 @@ packages
 distro-packages.list
 *.flavor
 *~
+pxelinux.0
+bzImage
+rootfs.gz

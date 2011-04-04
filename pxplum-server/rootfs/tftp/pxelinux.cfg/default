@@ -1,0 +1,6 @@
+DEFAULT slitaz
+
+LABEL slitaz
+	kernel slitaz-pxplum-client/bzImage
+	append initrd=slitaz-pxplum-client/rootfs.gz rw root=/dev/null lang=en_US kmap=us vga=normal autologin
+
