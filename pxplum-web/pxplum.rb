@@ -1,6 +1,8 @@
-require 'sinatra'
+require 'sinatra/base'
 
-get '/' do
-  "Pxplum"
+class Pxplum < Sinatra::Base
+  get '/' do
+    "Pxplum"
+  end
 end
 
