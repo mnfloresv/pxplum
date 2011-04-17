@@ -10,3 +10,5 @@ rootfs.gz
 pxplum-server/rootfs/usr
 pxplum-server/rootfs/tftp/slitaz-pxplum-client
 pxplum-server/rootfs/home/pxplum
+pxplum-server/rootfs/root/.ssh
+pxplum-client/rootfs/root/.ssh

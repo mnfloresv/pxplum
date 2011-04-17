@@ -11,7 +11,7 @@ VERSION="0.5"
 # Creation date: 15/Apr/2011
 #
 # Usage:
-# ./pxplum-builder.sh [--only-server] [--update-packages] [--update-gems]
+# ./pxplum-builder.sh [--only-server] [--update-packages] [--update-gems] [--new-dropbear-keys]
 # ./pxplum-builder.sh -h | --help
 # ./pxplum-builder.sh -v | --version
 #
@@ -35,6 +35,7 @@ PXELINUX_LZMA="/usr/share/boot/pxelinux.0.lzma"
 only_server="no"
 update_packages="no"
 update_gems="no"
+new_dropbear_keys="no"
 
 # Print functions
 print_line() {
@@ -69,7 +70,7 @@ help() {
     echo "client image for PXE, and the web interface included."
     echo
     echo "Usage:"
-    echo "$0 [--only-server] [--update-packages] [--update-gems]"
+    echo "$0 [--only-server] [--update-packages] [--update-gems] [--new-dropbear-keys]"
     echo "$0 -h | --help"
     echo "$0 -v | --version"
     echo
@@ -77,6 +78,7 @@ help() {
     echo -e "--only-server\t\tBuild only the server if possible."
     echo -e "--update-packages\tUpgrade the packages list to the latest versions."
     echo -e "--update-gems\t\tUpdate the installed Ruby gems."
+    echo -e "--new-dropbear-keys\tGenerate a new SSH key pair."
     echo -e "--help\t\t\tShow this help."
     echo -e "--version\t\tShow the version."
     echo
@@ -123,7 +125,8 @@ check_deps() {
     done
 
     # Check more directories
-    DIRS_TO_CREATE="$SERVER_FLAVOR/rootfs/usr $SERVER_FLAVOR/rootfs/tftp/slitaz-$CLIENT_FLAVOR"
+    DIRS_TO_CREATE="$SERVER_FLAVOR/rootfs/usr $SERVER_FLAVOR/rootfs/tftp/slitaz-$CLIENT_FLAVOR \
+                    $SERVER_FLAVOR/rootfs/root/.ssh $CLIENT_FLAVOR/rootfs/root/.ssh"
     for dir in $DIRS_TO_CREATE; do
         echo -n "* Checking $dir dir..."
         if [ ! -d "$dir" ]; then
@@ -136,7 +139,7 @@ check_deps() {
 
     # Check if needed commands exists
     echo "Checking if needed commands are installed..."
-    COMMANDS="tazlito unlzma find rsync gem"
+    COMMANDS="tazlito unlzma find rsync dropbearkey gem"
     for c in $COMMANDS; do
         echo -n "* Checking $c..."
         if ! hash "$c" > /dev/null 2>&1; then
@@ -239,7 +242,7 @@ manage_gems() {
     fi
 
     # Update installed gems
-    if [ $update_gems == "yes" ]; then
+    if [ "$update_gems" == "yes" ]; then
         if ! GEM_HOME="$gems_dir" GEM_PATH="$gems_dir" gem update -i $gems_dir -n $bin_dir --no-rdoc --no-ri; then
             print_endline "Error updating installed gems."
             exit 1
@@ -263,7 +266,7 @@ tazlito_gen_distro() {
     fi
 
     # Upgrade package list
-    if [ $update_packages == "yes" ]; then
+    if [ "$update_packages" == "yes" ]; then
         if ! tazlito upgrade-flavor $1; then
             print_endline "Error to upgrade-flavor $1."
             exit 1
@@ -286,10 +289,19 @@ tazlito_gen_distro() {
 
 # Build process
 build() {
+    #Check if dropbear keys exists
+    dropbear_priv_key="$SERVER_FLAVOR/rootfs/root/.ssh/id_rsa"
+    dropbear_pub_key="$CLIENT_FLAVOR/rootfs/root/.ssh/authorized_keys"
+
+    if [[ ! -e $dropbear_priv_key || ! -e $dropbear_pub_key ]]; then
+        new_dropbear_keys="yes"
+    fi
+    
     # Check if is needed to create client image
-    if [ $only_server == "yes" ]; then
+    if [ "$only_server" == "yes" ]; then
         if [[ ! -e $SERVER_FLAVOR/rootfs/tftp/slitaz-$CLIENT_FLAVOR/bzImage || \
-              ! -e $SERVER_FLAVOR/rootfs/tftp/slitaz-$CLIENT_FLAVOR/rootfs.gz ]]; then
+              ! -e $SERVER_FLAVOR/rootfs/tftp/slitaz-$CLIENT_FLAVOR/rootfs.gz || \
+              "$new_dropbear_keys" == "yes" ]]; then
             echo "Forcing client image creation."
             echo
             only_server="no"
@@ -297,11 +309,30 @@ build() {
     fi
 
     # Prepare client flavor
-    #if [ $only_server == "no" ]; then
-    #    print_step "Preparing client flavor"
-    #
-    #    print_endline "Client flavor OK"
-    #fi
+    if [[ "$only_server" == "no" && "$new_dropbear_keys" == "yes" ]]; then
+        print_step "Preparing client flavor"
+    
+        #Generate a new SSH key pair
+        if [ "$new_dropbear_keys" == "yes" ]; then
+            #Delete old secret key
+            if [ -e $dropbear_priv_key ]; then
+                echo -n "Deleting old dropbear secret key..."
+                rm $dropbear_priv_key
+                print_ok
+            fi
+
+            if dropbearkey -t rsa -f $dropbear_priv_key &&
+               dropbearkey -y -f $dropbear_priv_key | grep "^ssh-rsa" > $dropbear_pub_key; then
+                echo -n "Generating a new SSH key pair..."
+                print_ok
+            else
+                echo -n "Generating a new SSH key pair..."
+                print_fail "Error when generating new dropbear keys."
+                exit 1
+            fi
+        fi
+        print_endline "Client flavor OK"
+    fi
 
     # Prepare server flavor
     print_step "Preparing server flavor"
@@ -335,7 +366,7 @@ build() {
     print_endline "Server flavor OK"
 
     # Build client distro
-    if [ $only_server == "no" ]; then
+    if [ "$only_server" == "no" ]; then
         print_step "Building the client"
 
         # Build the distro
@@ -384,6 +415,9 @@ while [ $# -ge 1 ]; do
             ;;
         --update-gems)
             update_gems="yes"
+            ;;
+        --new-dropbear-keys)
+            new_dropbear_keys="yes"
             ;;
         *)
             echo "Pxplum builder $VERSION"
