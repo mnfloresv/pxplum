@@ -1,8 +1,12 @@
 distro
 packages
 distro-packages.list
+tazlito.conf
 *.flavor
 *~
 pxelinux.0
 bzImage
 rootfs.gz
+pxplum-server/rootfs/usr
+pxplum-server/rootfs/tftp/slitaz-pxplum-client
+pxplum-server/rootfs/home/pxplum
