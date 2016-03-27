@@ -1,0 +1,67 @@
+.row
+  .span9
+    %h3
+      Computer
+      = prettyaddr @hwaddr
+  .span3
+    %a(href="/dashboard")
+      ← Back to
+      %strong Dashboard
+%hr
+%div
+  %h4 Information
+  %div
+    %p
+      %strong Computer:
+      #{@hwaddr}
+    %p
+      %strong IP address:
+      #{@ip}
+    %p
+      %strong System information:
+    %pre
+      :preserve
+        #{@sysinfo}
+    %p
+      %strong Uptime:
+    %pre
+      :preserve
+        #{@uptime}
+%hr
+%div
+  %h4 Actions
+  %button.btn.btn-primary.memtester-computer Check memory
+  %button.btn.eject-computer Eject
+  %button.btn.beep-computer Beep
+  %button.btn.btn-warning.reboot-computer Reboot
+  %button.btn.btn-danger.poweroff-computer Power off
+  :javascript
+    $(".eject-computer").click(function () {
+      $.post("/computer/#{@hwaddr}/eject", function(data) {
+        console.log(data);
+      });
+    });
+
+    $(".beep-computer").click(function () {
+      $.post("/computer/#{@hwaddr}/beep", function(data) {
+        console.log(data);
+      });
+    });
+
+    $(".reboot-computer").click(function () {
+      $.post("/computer/#{@hwaddr}/reboot", function(data) {
+        console.log(data);
+      });
+    });
+
+    $(".poweroff-computer").click(function () {
+      $.post("/computer/#{@hwaddr}/poweroff", function(data) {
+        console.log(data);
+      });
+    });
+%div
+  %p &nbsp;
+  %p
+    %a(href="/dashboard")
+      ← Back to
+      %strong Dashboard

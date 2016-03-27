@@ -1,0 +1,30 @@
+#computers {
+  border:1px solid;
+  border-collapse:collapse;
+  width:70%;
+  font-family:monospace;
+  font-size:12px;
+  text-align:center;
+}
+
+#computers th {
+  background: purple;
+  color:white;
+}
+
+#computers tr {
+  border:1px solid;
+  background: lightblue;
+}
+
+#progressbar {
+  position:relative;
+  border:1px solid black;
+  heigth: 20px;
+  width:200px;
+}
+
+#progressbarcontent {
+  height:20px;
+  background:orange;
+}

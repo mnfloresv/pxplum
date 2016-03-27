@@ -1,0 +1,7 @@
+%p Hardware
+%p lspci
+- ip=Pxplum.slp.computers[@hwaddr]['ip']
+%textarea(rows='20' cols='120')= Pxplum.rrun(ip, 'lspci')
+%div &nbsp;
+%div
+  %a(href='/computer/#{@hwaddr}') Back

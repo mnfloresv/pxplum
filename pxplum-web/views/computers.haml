@@ -1,0 +1,18 @@
+- if @computers.any?
+  %table#computers
+    %tr
+      %th HWAddr
+      %th IP
+      %th Operating System
+      %th Action
+    - @computers.each_value do |hash|
+      %tr
+        %td
+          = prettyaddr hash['hwaddr']
+        %td #{hash['ip']}
+        %td #{hash['os']}
+        %td
+          %strong
+            %a(href='computer/#{hash['hwaddr']}') View
+- else
+  No computers

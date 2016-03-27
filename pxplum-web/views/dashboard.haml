@@ -1,0 +1,11 @@
+#table
+  = haml :computers, :layout => false
+%div &nbsp;
+%div
+  %a(href='/') Refresh
+:javascript
+  setInterval(function() {
+    $.post("/computers", function(data) {
+      $("#table").html(data);
+    });
+  }, 15000);
